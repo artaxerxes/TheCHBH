@@ -1,0 +1,114 @@
+% CHBH Scanner Volume Recovery - Windows
+% refer to https://github.com/Psychtoolbox-3/Psychtoolbox-3/wiki/FAQ:-Processing-keyboard-input
+% We use KbQueueCheck in this example which will safely capture input events
+% even if they occurred while the script was busy doing other stuff.
+
+% this file may be found on GitHub
+% 
+
+%% assuming there is nothing added to the loop - timing recovery is ~7ms after scanner volume
+
+if IsLinux
+    
+    %* If arg is ‘KeyNamesLinux’, KbName will print out a table of all
+    %keycodes->keynames mappings for GNU/Linux, X11.
+    KbName('KeyNamesLinux')
+    
+end
+if IsWindows
+    
+    %* If arg is ‘KeyNamesWindows’, KbName will print out a table of all
+    %keycodes->keynames mappings for M$-Windows.
+    KbName('KeyNamesWindows')
+end
+
+%% Insert this code at the beginning of your script.
+commandwindow % this is important to rpevent keypresses spilling into the editor
+KbName('UnifyKeyNames');
+escapeKey = KbName('ESCAPE');
+timingKey = KbName('t')
+acceptedKeys = ([KbName('0)'),KbName('1!'),KbName('2@'),KbName('3#'),...
+    KbName('4$'),KbName('5%'),KbName('6^'),KbName('7&'),KbName('8*'),KbName('9(')]);
+
+% % Prevent spilling of keystrokes into console:
+% ListenChar(-1);
+KbQueueCreate
+while KbCheck; end % Wait until all keys are released.
+
+% END OF PRE-AMBLE
+
+%% 't' detection code. Place at part of script where you need the first volume.
+keypress_enum = 0;
+
+KbQueueStart
+loop_start = GetSecs
+while 1 % await 't' press
+    % Check the queue for key presses.
+    [pressed, firstPress, firstRelease, lastPress, lastRelease]=KbQueueCheck;
+    % If the user has pressed a key, then display its code number and name.
+    %if pressed
+    if pressed == 0
+        %we don't change k to blank - a, h, s start - any other key except
+        %ESCAPE pauses.  ESCAPE...escapes.
+    else
+        if firstPress(timingKey)
+            % we have our timing event...
+            lastPress_timingKey = lastPress(timingKey);
+            % this retain the timing of the 't' press from KbQueueStart
+            % recover this for verification if required
+            break % we now exit this loop
+        end
+    end
+    
+    % if you want to force the program to continue - press escape.
+    if firstPress(escapeKey)
+        break;
+    end
+    
+    % pause(0.000001)
+    %clc
+end
+
+disp(['The `t` timing event occured - EXPERIMENT BEGINS',num2str(lastPress_timingKey),'ms after the KbQueueStart command'])
+
+%% loop acceptedKeys detection with t rejection (at the end, not in loop)
+
+pressed = [];
+itrial = 1;
+
+disp('We will gather ten `presses`, t and 0-9s included')
+while itrial < 10 % loop until we gather ten responses (0-9 & t)
+    
+    %% DO EXPERIMENTAL STUFF THAT REQUIRES A REPONSE
+    
+    %% Then recover NATA Keypresses
+    [pressed(itrial,:), firstPress(itrial,:), firstRelease(itrial,:),...
+        lastPress(itrial,:), lastRelease(itrial,:)] = KbQueueCheck;
+    
+    if pressed
+        
+        firstResp(itrial,:) = firstPress(itrial,acceptedKeys);
+        lastResp(itrial,:) = lastPress(itrial,acceptedKeys);
+        [r_time1, r_index1] = min(firstResp(firstResp>0));
+        [r_time2, r_index2] = min(lastResp(lastResp>0));
+        %% save only responses that are not t
+        
+        itrial = itrial +1
+        disp('PRESS MORE KEYS!')
+    end
+    
+    
+end
+
+disp('RESULTS OF TEN KEYPRESSES, t TIMES EXCLUDED')
+
+firstResp
+lastResp
+r_time1
+r_index1
+r_time2
+r_index2
+
+
+%% PLACE AT END OF SCRIPT & IN TRY/CATCH
+KbQueueRelease()
