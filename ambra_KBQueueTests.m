@@ -1,6 +1,6 @@
 if IsWindows
     
-    For windows, how about restricting keys for saving responses? Something along these lines (should be checked…)
+    % For windows, how about restricting keys for saving responses? Something along these lines (should be checked…)
     
     
     
