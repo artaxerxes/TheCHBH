@@ -4,7 +4,7 @@
 % even if they occurred while the script was busy doing other stuff.
 
 % this file may be found on GitHub
-% 
+% https://github.com/artaxerxes/TheCHBH/blob/master/SampleTriggerCodeCHBH_Windows
 
 %% assuming there is nothing added to the loop - timing recovery is ~7ms after scanner volume
 
@@ -76,16 +76,16 @@ disp(['The `t` timing event occured - EXPERIMENT BEGINS',num2str(lastPress_timin
 pressed = [];
 itrial = 1;
 
-disp('We will gather ten `presses`, t and 0-9s included')
+disp('We will gather ten `presses`, t and 0-9s included. Timing only for 0-9 retained')
 while itrial < 10 % loop until we gather ten responses (0-9 & t)
     
     %% DO EXPERIMENTAL STUFF THAT REQUIRES A REPONSE
     
-    %% Then recover NATA Keypresses
+    %% Then recover NATA Keypresses form the Queue
     [pressed(itrial,:), firstPress(itrial,:), firstRelease(itrial,:),...
         lastPress(itrial,:), lastRelease(itrial,:)] = KbQueueCheck;
     
-    if pressed
+    if pressed % only if there is a keypress or t event
         
         firstResp(itrial,:) = firstPress(itrial,acceptedKeys);
         lastResp(itrial,:) = lastPress(itrial,acceptedKeys);
@@ -112,3 +112,4 @@ r_index2
 
 %% PLACE AT END OF SCRIPT & IN TRY/CATCH
 KbQueueRelease()
+
