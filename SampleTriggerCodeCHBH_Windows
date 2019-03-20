@@ -12,18 +12,19 @@ if IsLinux
     
     %* If arg is ‘KeyNamesLinux’, KbName will print out a table of all
     %keycodes->keynames mappings for GNU/Linux, X11.
-    KbName('KeyNamesLinux')
-    
-end
-if IsWindows
+    KbName('KeyNamesLinux');
+    disp('THIS IS THE WINDOWS 10 SPECIFIC SCRIPT - NOT UBUNTU')
+elseif IsWindows
     
     %* If arg is ‘KeyNamesWindows’, KbName will print out a table of all
     %keycodes->keynames mappings for M$-Windows.
-    KbName('KeyNamesWindows')
+    KbName('KeyNamesWindows');
+    disp('THIS IS THE WINDOWS 10 SPECIFIC SCRIPT - ENSURE CAPSLOCK IS OFF')
 end
 
-%% Insert this code at the beginning of your script.
-commandwindow % this is important to rpevent keypresses spilling into the editor
+
+%% INSERT THIS CODE AT THE BGINNING OF YOUR SCRIPT - after any sca commands.
+commandwindow % this is important to prevent keypresses spilling into the editor
 KbName('UnifyKeyNames');
 escapeKey = KbName('ESCAPE');
 timingKey = KbName('t')
@@ -35,10 +36,12 @@ acceptedKeys = ([KbName('0)'),KbName('1!'),KbName('2@'),KbName('3#'),...
 KbQueueCreate
 while KbCheck; end % Wait until all keys are released.
 
-% END OF PRE-AMBLE
+% END OF 'INSERT AT BEGINNING
 
-%% 't' detection code. Place at part of script where you need the first volume.
-keypress_enum = 0;
+
+
+%% 't' DETECTION CODE. P
+% PLACE THIS WHERE YOU WANT THE TIMING EVENT DETECTED
 
 KbQueueStart
 loop_start = GetSecs
@@ -69,9 +72,12 @@ while 1 % await 't' press
     %clc
 end
 
-disp(['The `t` timing event occured - EXPERIMENT BEGINS',num2str(lastPress_timingKey),'ms after the KbQueueStart command'])
+disp(['THE `t` TIMING EVENT OCCURED - EXPERIMENT BEGINS',num2str(lastPress_timingKey),'ms AFTER KbQueueStart COMMAND'])
 
-%% loop acceptedKeys detection with t rejection (at the end, not in loop)
+% END OF 't' DETECTION CODE
+
+
+%% OPTIONAL - EXAMPLE LOOP OF ACCEPTED KEYS WITH 't' REJECTION - NOT NEEDED UNLESS YOU ARE GATHERING NAtA REPONSES
 
 pressed = [];
 itrial = 1;
@@ -109,7 +115,8 @@ r_index1
 r_time2
 r_index2
 
+% END OF OPTIONAL 
 
-%% PLACE AT END OF SCRIPT & IN TRY/CATCH
+
+%% PLACE AT END OF SCRIPT & IN TRY/CATCH TO RELEASE KbQueue
 KbQueueRelease()
-
