@@ -1,0 +1,112 @@
+commandwindow
+clear all
+
+if IsWindows
+    
+    % For windows, how about restricting keys for saving responses? Something along these lines (should be checked…)
+    
+    %Create and start queue for responses
+    
+    KbQueueCreate
+    
+    KbQueueStart
+    
+    % Response keys (check NAtA output!)
+    
+    p.acceptedKeys = ([KbName('0'),KbName('1'),KbName('2'),KbName('3'),...
+        
+    KbName('4'),KbName('5'),KbName('6'),KbName('7'),KbName('8'),KbName('9')]);
+
+%Collect responses and stop queue
+
+[p.pressed(itrial,:), p.firstPress(itrial,:), p.firstRelease(itrial,:),...
+    p.lastPress(itrial,:), p.lastRelease(itrial,:)] = KbQueueCheck;
+
+KbQueueStop
+
+p.firstResp(itrial,:) = p.firstPress(itrial,p.acceptedKeys);
+
+p.lastResp(itrial,:) = p.lastPress(itrial,p.acceptedKeys);
+    KbQueueStop(p.respDevIndex);
+    KbQueueStop(q.respDevIndex);
+[r_time1, r_index1] = min(p.firstResp(p.firstResp>0));
+
+[r_time2, r_index2] = min(p.lastResp(p.lastResp>0));
+
+elseif IsLinux
+    
+    %Specify response device name and index (this works for CHBH, tested Tuesday 9th Novemner 2021)
+    
+    p.responseDeviceName = 'NAtA Technologies LxPAD PK080219 v6.11'; % NAtA 2x5 + Scanner trigger
+    q.responseDeviceName = 'Dell Dell QuietKey Keyboard'; % DELL Keyboard
+    
+    p.responseDeviceNumInputs = 248;
+    q.responseDeviceNumInputs = 248;
+    
+    %Get response device index from its name and number of inputs
+    
+    [t.inputDevIndices, t.inputDevNames, t.inputDevInfo] = GetKeyboardIndices;
+    
+    for iKeyb = 1:size(t.inputDevIndices,2)
+        
+        if strcmp(p.responseDeviceName,t.inputDevNames{iKeyb}) && ...
+                p.responseDeviceNumInputs == t.inputDevInfo{1,iKeyb}.inputs
+            
+            p.respDevIndex = t.inputDevIndices(iKeyb);
+            
+        end
+        
+    end
+    
+    for iKeyb = 1:size(t.inputDevIndices,2)
+        
+        if strcmp(q.responseDeviceName,t.inputDevNames{iKeyb}) && ...
+                q.responseDeviceNumInputs == t.inputDevInfo{1,iKeyb}.inputs
+            
+            q.respDevIndex = t.inputDevIndices(iKeyb);
+            
+        end
+        
+    end
+    
+    disp('QUEUES BEING CREATED')
+    %Create queue for NAtA responses
+    
+    KbQueueCreate(p.respDevIndex);
+    KbQueueStart(p.respDevIndex)
+        %Create queue for DELL keyboard responses
+    
+    KbQueueCreate(q.respDevIndex);
+      KbQueueStart(q.respDevIndex);
+    
+    
+    %STUFF HAPPENS
+    disp('WaitSecs')
+    WaitSecs(4)
+    disp('Finished')
+    
+%     itrial = 1
+    
+    %Collect responses and stop queue
+    
+    [p.pressed, p.firstPress, p.firstRelease,...
+        p.lastPress, p.lastRelease] = KbQueueCheck(p.respDevIndex);
+    
+    
+    [q.pressed, q.firstPress, q.firstRelease,...
+        q.lastPress, q.lastRelease] = KbQueueCheck(q.respDevIndex);
+
+    disp('RESPONSES TAKEN- STOPPING QUEUES')
+    %% Clean up
+    
+    KbQueueStop(p.respDevIndex);
+    KbQueueStop(q.respDevIndex);
+    
+    
+    disp('STOPPED QUEUES')
+    
+        KbQueueRelease(p.respDevIndex);
+    KbQueueRelease(q.respDevIndex);
+    
+end
+
